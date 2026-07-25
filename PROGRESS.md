@@ -3,7 +3,7 @@
 > Fail ini dikemas kini selepas SETIAP fasa. Sesi baharu boleh sambung kerja
 > hanya dengan membaca fail ini — tidak perlu baca semula semua kod.
 
-**Kemas kini terakhir:** 2026-07-25 · **Status:** Fasa 1–3 + 5 SIAP · 95 ujian lulus
+**Kemas kini terakhir:** 2026-07-25 · **Status:** Fasa 1–5 SIAP · 132 ujian lulus · Tinggal Fasa 7 (kemasan)
 
 ---
 
@@ -264,77 +264,87 @@ tests/Feature/Ujian/ScoringTest.php               13 ujian — 13.33 / 42.00 / 5
 tests/Feature/Ujian/ExamTimerTest.php             10 ujian — penolakan selepas luput, idempotency, kiraan detik
 tests/Feature/Ujian/ExamPageTest.php              17 ujian — simpan serta-merta, palet, kebocoran skor, keizinan
 tests/Feature/RoleAccessTest.php                   8 ujian — middleware peranan + redirect log masuk
+tests/Feature/Admin/SoalanATest.php               17 ujian — CRUD A, skor, re-index, nyahaktif
+tests/Feature/Admin/SoalanBTest.php               20 ujian — CRUD B, tepat-satu-betul, anjakan correctIndex
 ```
 
 ### Keadaan pengesahan semasa
 ```
 php artisan migrate:fresh --seed                     ✅ bersih
-php artisan test                                     ✅ 95 lulus, 345 assertion
+php artisan test                                     ✅ 132 lulus, 457 assertion
 vendor\bin\pint --parallel --test                    ✅ lulus
 vendor\bin\phpstan analyse --memory-limit=1G         ✅ 0 ralat (level 7)
 ```
 
 ---
 
-## ⏭️ FASA 4 — Admin CRUD (BELUM DIBUAT — kerja seterusnya)
+## ✅ FASA 4 — Admin CRUD (SIAP)
 
-> Ingat: **Livewire 4 SFC + Flux**, BUKAN Filament. Tiada dependency baharu.
+Dibina guna **Livewire 4 SFC + Flux**, BUKAN Filament. Tiada dependency baharu.
 
-Fail placeholder SUDAH dijana oleh `php artisan make:livewire` tetapi masih kandungan stub:
+### Fail dicipta
 ```
-resources/views/pages/admin/⚡soalan-a.blade.php   ← stub, perlu ditulis
-resources/views/pages/admin/⚡soalan-b.blade.php   ← stub, perlu ditulis
+app/Concerns/ManagesQuestions.php            state borang + sync opsyen + padam/nyahaktif
+app/Livewire/Admin/QuestionBankPage.php      kelas ABSTRAK asas untuk kedua-dua skrin
+tests/Feature/Admin/SoalanATest.php          17 ujian
+tests/Feature/Admin/SoalanBTest.php          20 ujian
 ```
-Laluan `admin.soalan-a` / `admin.soalan-b` **sudah wujud** dalam `routes/web.php` dan
-sudah dilindungi `role:admin`. `RoleAccessTest` sudah sahkan pelajar dapat 403.
 
-### Perlu dicipta
-**`app/Concerns/ManagesQuestions.php`** — semua peraturan pengesahan + kegigihan di sini,
-supaya logik admin berada dalam `app/` yang dianalisis PHPStan (ikut corak
-`app/Concerns/ProfileValidationRules.php` yang sedia ada).
+### Fail diubah (daripada stub kepada penuh)
+```
+resources/views/pages/admin/⚡soalan-a.blade.php
+resources/views/pages/admin/⚡soalan-b.blade.php
+```
 
-### Spesifikasi Bahagian A
-- Medan: `question_text`, `is_active`, senarai opsyen (min 4, maks 6), setiap satu ada `skor`
-- `subject` mesti `null`, semua `is_correct` mesti `false`
-- Peraturan silang-baris yang peraturan array biasa tidak boleh ungkap:
-  **sekurang-kurangnya satu opsyen mesti berskor > 0**, jika tidak `ScoringService`
-  sumbang 0 kepada `maxA` dan soalan itu senyap-senyap berhenti dikira
+### ⚠️ Kenapa ada kelas abstrak, bukan trait sahaja
+Percubaan pertama letak semua logik dalam trait `ManagesQuestions` sahaja **gagal**
+PHPStan: trait itu hanya digunakan dari `resources/` yang tidak dianalisis, jadi
+PHPStan lapor `trait.unused` selama-lamanya. Penyelesaian: kelas abstrak
+`App\Livewire\Admin\QuestionBankPage extends Component` yang `use ManagesQuestions`,
+dan kedua-dua SFC `extends QuestionBankPage`. Kini semua logik benar-benar dianalisis
+level 7. **Jangan pindahkan logik kembali ke dalam fail Blade.**
 
-### Spesifikasi Bahagian B
-- Medan: `question_text`, `subject` (wajib), `is_active`, opsyen (min 4, maks 6)
-- **"Tepat satu betul"**: JANGAN guna array checkbox `is_correct`. Guna **satu skalar**
-  `public ?int $correctIndex` terikat pada `<flux:radio.group variant="cards">`
-  (disahkan wujud dalam Flux percuma). Kumpulan radio secara *struktur* tepat-satu —
-  keadaan tidak sah tidak boleh diungkap dalam UI langsung.
-  Pertahanan pelayan: `Rule::in(array_keys($this->options))`.
-  Semasa simpan: `is_correct = ($index === $this->correctIndex)`.
+### Kontrak kelas abstrak
+Setiap SFC WAJIB laksana empat kaedah ini:
+```php
+protected function section(): Section;              // A atau B
+protected function subject(): ?Subject;             // null untuk A
+protected function correctOptionIndex(): ?int;      // null untuk A
+protected function validationRules(): array;
+```
+Kaedah pilihan untuk di-override: `beforeSave()` (semakan silang-baris),
+`handleOptionRemoved(int $index)` (pembetulan selepas baris dibuang),
+`resetForm()`, `fillFormFrom(Question)` — dua terakhir panggil `parent::` dahulu.
 
-### ⚠️ Tiga perangkap yang WAJIB dikendalikan
-1. Selepas `unset($this->options[$i])` **mesti** `array_values()`, jika tidak
-   `wire:model="options.3…"` terikat pada lubang dan Livewire senyap-senyap buang input.
-2. `wire:key` mesti **uid stabil setiap baris** (`Str::uuid()` semasa baris dicipta),
-   BUKAN indeks gelung. Kunci indeks → padam baris tengah → morphdom bawa DOM basi
-   ke baris salah (gejala klasik: padam opsyen 2, teks opsyen 3 hilang).
-3. `removeOption()` mesti betulkan `correctIndex`: kosongkan jika baris itu sendiri,
-   kurangkan 1 jika baris sebelumnya dipadam. Tanpa ini, padam opsyen 1 senyap-senyap
-   pindahkan jawapan betul ke opsyen lain.
+Tindakan yang disediakan percuma: `create()`, `edit(int)`, `save()`, `addOption()`,
+`removeOption(int)`, `confirmDelete(int)`, `delete()`, `updatedSearch()`,
+serta `#[Computed] questions()` (paginate 10, ditapis ikut section).
 
-### Padam soalan
-FK ialah `restrictOnDelete`. Semak `$question->attemptQuestions()->exists()` DAHULU:
-- jika sudah digunakan → `update(['is_active' => false])` + toast amaran
-- jika belum → padam sebenar
+### Tiga perangkap — SEMUA sudah dikendalikan dan diuji
+1. **Re-index selepas buang baris** — `ManagesQuestions::removeOption()` panggil
+   `array_values()`. Diuji: `test_removing_an_option_reindexes_the_remaining_rows`.
+2. **`wire:key` uid stabil** — setiap baris ada `'key' => Str::uuid()` dijana sekali
+   semasa baris dicipta, bukan indeks gelung. Diuji: `test_every_option_row_has_a_stable_unique_key`.
+3. **Anjakan `correctIndex`** — `handleOptionRemoved()` dalam `⚡soalan-b` kosongkan
+   jika baris itu sendiri dibuang, kurangkan 1 jika baris sebelumnya dibuang.
+   Diuji tiga kali, termasuk `test_the_shifted_selection_saves_the_intended_option`
+   yang sahkan opsyen yang BETUL benar-benar tersimpan selepas anjakan.
 
-### Senarai
-`flux:table` + `flux:pagination`, trait `Livewire\WithPagination`, `#[Computed] questions()`
-paginate 10, carian `wire:model.live.debounce.300ms` + `updatedSearch() { $this->resetPage(); }`
-(tanpa ini, mencari dari halaman 3 papar senarai kosong). Borang dalam `flux:modal`
-(ikut corak `resources/views/pages/settings/⚡delete-user-modal.blade.php`).
+### Keputusan reka bentuk
+| Perkara | Cara |
+|---|---|
+| "Tepat satu betul" (B) | Satu skalar `public ?int $correctIndex` terikat `<flux:radio.group variant="cards">`. Kumpulan radio secara **struktur** tepat-satu — "sifar betul" dan "dua betul" tidak boleh diungkap dalam UI. Pertahanan payload: `Rule::in(array_keys($this->options))` |
+| Skor Bahagian A | `options.*.score` integer 0–10; `beforeSave()` tolak jika tiada satu pun > 0 (jika tidak soalan senyap-senyap berhenti dikira dalam `maxA`) |
+| Padam soalan | `removeOrDeactivate()` — semak `attemptQuestions()->exists()` DAHULU; jika terpakai → `is_active = false` + toast amaran; jika tidak → padam betul-betul |
+| Min/maks opsyen | `MIN_OPTIONS = 4`, `MAX_OPTIONS = 6` |
+| Sync opsyen | Baris ada `id` → update; tiada `id` → cipta; selebihnya `whereNotIn($keptIds)->delete()` |
+| Modal | `Flux::modal('borang-soalan')->show()` / `->close()` dipanggil dari PHP, bukan `flux:modal.trigger` |
 
-### Ujian yang perlu ditulis
-`tests/Feature/Admin/SoalanATest.php` dan `SoalanBTest.php` — cipta soalan A berskor;
-min 4 opsyen; wajib ada skor > 0; sync opsyen semasa edit tanpa yatim; padam soalan
-terpakai → nyahaktif. Untuk B: tepat satu `is_correct`; subjek wajib; `correctIndex`
-wajib + julat; buang baris betul → kosongkan; buang baris sebelum → anjak indeks.
+### Nota ujian (untuk sesi baharu)
+- `questions` ialah `#[Computed]`, **bukan** view data — `viewData('questions')` akan
+  gagal "Undefined array key". Guna `assertSee()` / `assertDontSee()` untuk uji senarai.
+- `findOrFail()` dalam tindakan Livewire membaling `ModelNotFoundException`, bukan
+  pulangkan status 404 — guna `expectException()`, bukan `assertStatus(404)`.
 
 ---
 
