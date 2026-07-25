@@ -413,10 +413,13 @@ Meletakkannya sebagai statik dalam `QuestionImportResult` (kelas hasil import) a
 nama yang salah sebaik ia dikongsi. Kini satu kelas boleh disuntik, dua tempat guna,
 nombor sentiasa sepadan.
 
-### ⚠️ Fail yatim
-`resources/views/dashboard.blade.php` (1,275 bait) kini **tidak dirujuk oleh apa-apa**
-selepas laluan bertukar kepada SFC. Ia dibiarkan kerana memadam fail perlukan kebenaran
-pengguna. Selamat dipadam bila-bila masa.
+### Fail lama dibuang
+`resources/views/dashboard.blade.php` (placeholder starter kit) **telah dipadam** —
+laluan kini menunjuk kepada SFC, jadi fail itu tidak lagi dimuatkan oleh apa-apa.
+Menyimpan dua fail bernama "dashboard" hanya mengundang salah edit kemudian.
+
+Kesan sampingan: `resources/views/components/placeholder-pattern.blade.php` kini
+turut yatim (tiada rujukan tinggal dalam `resources/`, `app/`, atau `routes/`).
 
 ---
 
