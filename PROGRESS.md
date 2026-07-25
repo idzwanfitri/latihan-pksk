@@ -418,8 +418,10 @@ nombor sentiasa sepadan.
 laluan kini menunjuk kepada SFC, jadi fail itu tidak lagi dimuatkan oleh apa-apa.
 Menyimpan dua fail bernama "dashboard" hanya mengundang salah edit kemudian.
 
-Kesan sampingan: `resources/views/components/placeholder-pattern.blade.php` kini
-turut yatim (tiada rujukan tinggal dalam `resources/`, `app/`, atau `routes/`).
+Komponen `resources/views/components/placeholder-pattern.blade.php` turut dipadam —
+ia hanya digunakan oleh view yang dibuang itu. Tiada lagi sisa placeholder starter kit.
+
+Konvensyen kerja, arahan, dan perangkap kini direkod dalam [CLAUDE.md](CLAUDE.md).
 
 ---
 
