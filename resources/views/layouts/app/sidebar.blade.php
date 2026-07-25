@@ -16,6 +16,39 @@
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
+
+                @if (auth()->user()?->isAdmin())
+                    <flux:sidebar.group :heading="__('Bank Soalan')" class="grid">
+                        <flux:sidebar.item
+                            icon="clipboard-document-list"
+                            :href="route('admin.soalan-a')"
+                            :current="request()->routeIs('admin.soalan-a')"
+                            wire:navigate
+                        >
+                            {{ __('Soalan Bahagian A') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item
+                            icon="academic-cap"
+                            :href="route('admin.soalan-b')"
+                            :current="request()->routeIs('admin.soalan-b')"
+                            wire:navigate
+                        >
+                            {{ __('Soalan Bahagian B') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @else
+                    <flux:sidebar.group :heading="__('Peperiksaan')" class="grid">
+                        <flux:sidebar.item
+                            icon="pencil-square"
+                            :href="route('ujian.mula')"
+                            :current="request()->routeIs('ujian.*')"
+                            wire:navigate
+                        >
+                            {{ __('Ujian PKSK') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endif
             </flux:sidebar.nav>
 
             <flux:spacer />

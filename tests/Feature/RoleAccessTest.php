@@ -56,6 +56,25 @@ class RoleAccessTest extends TestCase
         $this->get(route('ujian.mula'))->assertOk();
     }
 
+    public function test_the_sidebar_shows_the_question_bank_only_to_admins(): void
+    {
+        $this->actingAs(User::factory()->admin()->create());
+
+        $this->get(route('dashboard'))
+            ->assertSeeText('Soalan Bahagian A')
+            ->assertSeeText('Soalan Bahagian B')
+            ->assertDontSeeText('Ujian PKSK');
+    }
+
+    public function test_the_sidebar_shows_the_exam_only_to_pelajar(): void
+    {
+        $this->actingAs(User::factory()->pelajar()->create());
+
+        $this->get(route('dashboard'))
+            ->assertSeeText('Ujian PKSK')
+            ->assertDontSeeText('Soalan Bahagian A');
+    }
+
     public function test_an_admin_is_sent_to_the_question_bank_after_logging_in(): void
     {
         $admin = User::factory()->admin()->create();

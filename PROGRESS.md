@@ -348,13 +348,15 @@ serta `#[Computed] questions()` (paginate 10, ditapis ikut section).
 
 ---
 
-## ⏭️ FASA 7 — Kemasan akhir (BELUM DIBUAT)
+## ✅ FASA 7 — Navigasi ikut peranan (SIAP)
 
-- `resources/views/layouts/app/sidebar.blade.php` — tambah item nav ikut peranan
-  ke dalam kumpulan "Platform" sedia ada (fail ini TIADA penanda chisel, selamat diedit):
-  admin → dua halaman soalan; pelajar → "Ujian PKSK"
-- Semak semula semua teks BM
-- Jalankan `composer test` penuh
+`resources/views/layouts/app/sidebar.blade.php` — dua kumpulan nav baharu selepas
+"Platform" (fail ini TIADA penanda chisel):
+- Admin → kumpulan **"Bank Soalan"**: Soalan Bahagian A, Soalan Bahagian B
+- Pelajar → kumpulan **"Peperiksaan"**: Ujian PKSK
+
+Guna `auth()->user()?->isAdmin()`. Diuji dalam `RoleAccessTest`:
+`test_the_sidebar_shows_the_question_bank_only_to_admins` dan pasangannya untuk pelajar.
 
 ---
 
