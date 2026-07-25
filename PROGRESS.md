@@ -3,7 +3,7 @@
 > Fail ini dikemas kini selepas SETIAP fasa. Sesi baharu boleh sambung kerja
 > hanya dengan membaca fail ini — tidak perlu baca semula semua kod.
 
-**Kemas kini terakhir:** 2026-07-25 · **Status:** SEMUA FASA SIAP (1–8) · 154 ujian lulus
+**Kemas kini terakhir:** 2026-07-25 · **Status:** SEMUA FASA SIAP (1–9) · 169 ujian lulus · UI disahkan dalam pelayar
 
 ---
 
@@ -267,12 +267,13 @@ tests/Feature/RoleAccessTest.php                   8 ujian — middleware perana
 tests/Feature/Admin/SoalanATest.php               17 ujian — CRUD A, skor, re-index, nyahaktif
 tests/Feature/Admin/SoalanBTest.php               20 ujian — CRUD B, tepat-satu-betul, anjakan correctIndex
 tests/Feature/Admin/ImportSoalanTest.php          20 ujian — import JSON, pengesahan, dedup, dry-run
+tests/Feature/PapanPemukaTest.php                 15 ujian — papan pemuka ikut peranan
 ```
 
 ### Keadaan pengesahan semasa
 ```
 php artisan migrate:fresh --seed                     ✅ bersih
-php artisan test                                     ✅ 154 lulus, 513 assertion
+php artisan test                                     ✅ 169 lulus, 560 assertion
 vendor\bin\pint --parallel --test                    ✅ lulus
 vendor\bin\phpstan analyse --memory-limit=1G         ✅ 0 ralat (level 7)
 ```
@@ -371,6 +372,51 @@ serta `#[Computed] questions()` (paginate 10, ditapis ikut section).
 
 Guna `auth()->user()?->isAdmin()`. Diuji dalam `RoleAccessTest`:
 `test_the_sidebar_shows_the_question_bank_only_to_admins` dan pasangannya untuk pelajar.
+
+**Kemas kini kemudian:** pautan "Repository" dan "Documentation" starter kit dibuang
+atas permintaan pengguna. Nav bawah `flux:spacer` kini kosong, tinggal menu pengguna.
+
+---
+
+## ✅ FASA 9 — Papan pemuka ikut peranan (SIAP)
+
+Sebelum ini `dashboard` hanyalah placeholder starter kit (3 kotak `aspect-video`
+kosong dengan corak SVG). Kini ia papan pemuka sebenar.
+
+```
+resources/views/pages/⚡dashboard.blade.php   BAHARU — halaman Livewire ikut peranan
+app/Services/QuestionBankReport.php          BAHARU — health(), isReady(), subjectSpread(), counts()
+app/Services/PelajarProgress.php             BAHARU — activeAttempt(), latestResult(), bestTotal(), dll
+tests/Feature/PapanPemukaTest.php            BAHARU — 15 ujian
+```
+
+Fail diubah:
+- `routes/web.php` — `Route::view('dashboard', ...)` → `Route::livewire('dashboard', 'pages::dashboard')`.
+  Nama laluan `dashboard` KEKAL, jadi `DashboardTest` dan `⚡profile` masih berfungsi.
+- `app/Services/QuestionImportResult.php` — statik `bankHealth()`/`subjectSpread()`
+  **dipindah keluar** ke `QuestionBankReport`. Kelas ini kini hanya simpan hasil import.
+- `app/Console/Commands/ImportQuestionsCommand.php` — guna `QuestionBankReport`.
+- `resources/views/layouts/app/sidebar.blade.php` — buang Repository + Documentation.
+
+### Kandungan
+**Admin:** 4 kad kiraan (jumlah / aktif / tidak aktif / percubaan), jadual kesediaan
+bank dengan `flux:progress` setiap kategori, amaran merah jika bank tidak cukup untuk
+satu kertas, jadual taburan subjek B, pautan ke kedua-dua skrin soalan.
+
+**Pelajar:** kad sambung ujian jika ada percubaan hidup (dengan baki masa), 3 kad
+(ujian selesai / skor terbaik / skor terakhir), jadual 5 keputusan terkini, atau
+keadaan kosong jika belum pernah menduduki ujian.
+
+### Kenapa `QuestionBankReport` diasingkan
+Arahan `soalan:import` DAN papan pemuka admin kedua-duanya perlukan angka yang sama.
+Meletakkannya sebagai statik dalam `QuestionImportResult` (kelas hasil import) adalah
+nama yang salah sebaik ia dikongsi. Kini satu kelas boleh disuntik, dua tempat guna,
+nombor sentiasa sepadan.
+
+### ⚠️ Fail yatim
+`resources/views/dashboard.blade.php` (1,275 bait) kini **tidak dirujuk oleh apa-apa**
+selepas laluan bertukar kepada SFC. Ia dibiarkan kerana memadam fail perlukan kebenaran
+pengguna. Selamat dipadam bila-bila masa.
 
 ---
 

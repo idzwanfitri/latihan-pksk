@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\QuestionBankReport;
 use App\Services\QuestionImporter;
 use App\Services\QuestionImportResult;
 use Illuminate\Console\Command;
@@ -96,12 +97,14 @@ class ImportQuestionsCommand extends Command
             );
         }
 
+        $report = app(QuestionBankReport::class);
+
         $this->newLine();
         $this->line('<options=bold>Kesediaan bank soalan (soalan AKTIF sahaja)</>');
 
         $rows = [];
 
-        foreach (QuestionImportResult::bankHealth() as $row) {
+        foreach ($report->health() as $row) {
             $rows[] = [
                 $row['label'],
                 $row['available'],
@@ -112,9 +115,7 @@ class ImportQuestionsCommand extends Command
 
         $this->table(['Kategori', 'Tersedia', 'Diperlukan', 'Status'], $rows);
 
-        $kurang = array_filter(QuestionImportResult::bankHealth(), fn (array $row): bool => ! $row['ok']);
-
-        if ($kurang !== []) {
+        if (! $report->isReady()) {
             $this->components->warn('Ujian belum boleh dimulakan sehingga setiap kategori mencukupi.');
         }
 
@@ -124,7 +125,7 @@ class ImportQuestionsCommand extends Command
 
         $spread = [];
 
-        foreach (QuestionImportResult::subjectSpread() as $row) {
+        foreach ($report->subjectSpread() as $row) {
             $spread[] = [$row['subject'], $row['count'], $row['percent'].'%'];
         }
 
