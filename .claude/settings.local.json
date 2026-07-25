@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($c = Get-Command composer -ErrorAction SilentlyContinue; if \\($c\\) { $c.Source } else { \"composer not on PATH\" }; $p = Get-Command php -ErrorAction SilentlyContinue; if \\($p\\) { $p.Source; php -v | Select-Object -First 1 } else { \"php not on PATH\" })",
+      "PowerShell(composer show -a filament/filament 2>$null)",
+      "Bash(grep -n \"App\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\Livewire\\\\|app/Livewire\\\\|classNamespace\\\\|class_exists\\\\|is_subclass_of\" vendor/livewire/livewire/src/Finder/Finder.php)",
+      "Bash(grep -rn \"Attributes\\\\\\\\\\\\\\\\Fillable\\\\|Fillable::class\" \"C:/Users/Admin/Desktop/Herd/latihan-pksk/vendor/laravel/framework/src/Illuminate/Database/Eloquent/\")",
+      "Bash(php -r ' *)",
+      "PowerShell(php artisan migrate:fresh --no-interaction 2>&1)",
+      "PowerShell(vendor\\\\bin\\\\phpstan analyse --no-progress --error-format=table 2>&1)",
+      "PowerShell(vendor\\\\bin\\\\phpstan analyse --no-progress --memory-limit=1G 2>&1)"
+    ]
+  }
+}
