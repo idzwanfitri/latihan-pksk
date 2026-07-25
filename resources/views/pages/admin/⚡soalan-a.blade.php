@@ -3,6 +3,7 @@
 use App\Enums\Section;
 use App\Enums\Subject;
 use App\Livewire\Admin\QuestionBankPage;
+use App\Models\Question;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Title;
 
@@ -42,7 +43,7 @@ new #[Title('Soalan Bahagian A')] class extends QuestionBankPage {
         return [
             'questionText.required' => __('Teks soalan diperlukan.'),
             'questionText.min' => __('Teks soalan terlalu pendek.'),
-            'options.min' => __('Sekurang-kurangnya :min pilihan diperlukan.', ['min' => self::MIN_OPTIONS]),
+            'options.min' => __('Sekurang-kurangnya :min pilihan diperlukan.', ['min' => Question::MIN_OPTIONS]),
             'options.*.option_text.required' => __('Teks pilihan diperlukan.'),
             'options.*.score.required' => __('Skor diperlukan.'),
             'options.*.score.integer' => __('Skor mesti nombor bulat.'),

@@ -1,0 +1,78 @@
+{
+    "_nota": "Format fail import untuk 'php artisan soalan:import'. Buang kunci yang bermula dengan garis bawah sebelum guna — ia diabaikan oleh pengimport. Kedua-dua 'section_a' dan 'section_b' adalah pilihan; sertakan yang perlu sahaja.",
+
+    "_peraturan_section_a": [
+        "Kecerdasan Insaniah — soalan situasi, TIADA jawapan betul.",
+        "'text': 10 hingga 1000 aksara.",
+        "'options': 4 hingga 6 pilihan; setiap satu objek dengan 'text' dan 'score'.",
+        "'score': integer 0 hingga 10. Lazimnya 3 / 2 / 1 / 0.",
+        "WAJIB: sekurang-kurangnya satu pilihan berskor melebihi 0.",
+        "Jangan letak pilihan berskor tertinggi sentiasa di kedudukan pertama — kocok susunannya."
+    ],
+
+    "_peraturan_section_b": [
+        "Kecerdasan Intelek — tepat SATU jawapan betul.",
+        "'subject': salah satu daripada iq, pengetahuan_am, matematik, sains, bahasa_inggeris.",
+        "'text': 10 hingga 1000 aksara.",
+        "'options': 4 hingga 6 teks biasa (bukan objek), semuanya mesti berbeza.",
+        "'correct': indeks bermula 0 yang menunjuk kepada jawapan betul dalam 'options'.",
+        "Jangan letak jawapan betul sentiasa pada indeks yang sama — kocok susunannya.",
+        "Soalan bahasa_inggeris ditulis dalam bahasa Inggeris; selain itu gunakan Bahasa Melayu."
+    ],
+
+    "_kuota_satu_kertas": "Setiap percubaan menarik 30 Bahagian A + 60 Bahagian B bukan-Inggeris + 10 Bahasa Inggeris. Bank mesti melebihi jumlah itu supaya setiap percubaan berbeza. Sasaran yang baik: 150 A, 290 bukan-BI, 60 BI.",
+
+    "section_a": [
+        {
+            "text": "Rakan sekelas anda meminta untuk menyalin kerja rumah anda kerana dia tidak sempat menyiapkannya. Apakah tindakan anda?",
+            "options": [
+                { "text": "Menolak, tetapi menawarkan diri untuk mengajarnya cara menyiapkan kerja itu.", "score": 3 },
+                { "text": "Memberi kerja rumah anda kepadanya kerana dia rakan baik anda.", "score": 0 },
+                { "text": "Menolak permintaannya tanpa memberikan sebarang penjelasan.", "score": 1 },
+                { "text": "Menasihatinya supaya berjumpa guru dan memohon lanjutan masa.", "score": 2 }
+            ]
+        },
+        {
+            "text": "Anda menjumpai sebuah dompet berisi wang di dalam tandas sekolah. Apakah tindakan anda?",
+            "options": [
+                { "text": "Menyimpannya dahulu dan menunggu ada orang bertanya.", "score": 1 },
+                { "text": "Menyerahkan dompet itu kepada guru atau pejabat sekolah dengan segera.", "score": 3 },
+                { "text": "Mengambil wang di dalamnya kerana anda yang menjumpainya.", "score": 0 },
+                { "text": "Bertanya kepada rakan sekelas siapa pemiliknya sebelum menyerahkannya.", "score": 2 }
+            ]
+        }
+    ],
+
+    "section_b": [
+        {
+            "subject": "iq",
+            "text": "Lengkapkan siri nombor berikut: 2, 4, 8, 16, ___",
+            "options": ["24", "32", "20", "28"],
+            "correct": 1
+        },
+        {
+            "subject": "matematik",
+            "text": "Sebuah kedai memberi diskaun 20% bagi barang berharga RM80. Berapakah harga selepas diskaun?",
+            "options": ["RM64", "RM60", "RM68", "RM72"],
+            "correct": 0
+        },
+        {
+            "subject": "sains",
+            "text": "Apakah proses tumbuhan menghasilkan makanan sendiri?",
+            "options": ["Respirasi", "Transpirasi", "Fotosintesis", "Pendebungaan"],
+            "correct": 2
+        },
+        {
+            "subject": "pengetahuan_am",
+            "text": "Gunung manakah yang tertinggi di Malaysia?",
+            "options": ["Gunung Tahan", "Gunung Ledang", "Gunung Jerai", "Gunung Kinabalu"],
+            "correct": 3
+        },
+        {
+            "subject": "bahasa_inggeris",
+            "text": "Choose the correct answer: She ___ to school every morning.",
+            "options": ["going", "goes", "go", "gone"],
+            "correct": 1
+        }
+    ]
+}

@@ -53,7 +53,7 @@ new #[Title('Soalan Bahagian B')] class extends QuestionBankPage {
             'questionText.required' => __('Teks soalan diperlukan.'),
             'questionText.min' => __('Teks soalan terlalu pendek.'),
             'subjectValue.required' => __('Sila pilih subjek.'),
-            'options.min' => __('Sekurang-kurangnya :min pilihan diperlukan.', ['min' => self::MIN_OPTIONS]),
+            'options.min' => __('Sekurang-kurangnya :min pilihan diperlukan.', ['min' => Question::MIN_OPTIONS]),
             'options.*.option_text.required' => __('Teks pilihan diperlukan.'),
             'correctIndex.required' => __('Sila tandakan satu jawapan yang betul.'),
             'correctIndex.in' => __('Jawapan betul yang dipilih tidak sah.'),

@@ -32,6 +32,14 @@ class Question extends Model
     use HasFactory;
 
     /**
+     * Option-count bounds every write path has to respect — the admin screens
+     * and the bulk importer alike.
+     */
+    public const int MIN_OPTIONS = 4;
+
+    public const int MAX_OPTIONS = 6;
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array

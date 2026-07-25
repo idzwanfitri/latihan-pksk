@@ -3,7 +3,7 @@
 > Fail ini dikemas kini selepas SETIAP fasa. Sesi baharu boleh sambung kerja
 > hanya dengan membaca fail ini — tidak perlu baca semula semua kod.
 
-**Kemas kini terakhir:** 2026-07-25 · **Status:** Fasa 1–5 SIAP · 132 ujian lulus · Tinggal Fasa 7 (kemasan)
+**Kemas kini terakhir:** 2026-07-25 · **Status:** SEMUA FASA SIAP (1–8) · 154 ujian lulus
 
 ---
 
@@ -266,15 +266,29 @@ tests/Feature/Ujian/ExamPageTest.php              17 ujian — simpan serta-mert
 tests/Feature/RoleAccessTest.php                   8 ujian — middleware peranan + redirect log masuk
 tests/Feature/Admin/SoalanATest.php               17 ujian — CRUD A, skor, re-index, nyahaktif
 tests/Feature/Admin/SoalanBTest.php               20 ujian — CRUD B, tepat-satu-betul, anjakan correctIndex
+tests/Feature/Admin/ImportSoalanTest.php          20 ujian — import JSON, pengesahan, dedup, dry-run
 ```
 
 ### Keadaan pengesahan semasa
 ```
 php artisan migrate:fresh --seed                     ✅ bersih
-php artisan test                                     ✅ 132 lulus, 457 assertion
+php artisan test                                     ✅ 154 lulus, 513 assertion
 vendor\bin\pint --parallel --test                    ✅ lulus
 vendor\bin\phpstan analyse --memory-limit=1G         ✅ 0 ralat (level 7)
 ```
+
+### Penanda aras prestasi (bank 630 soalan)
+Cipta percubaan: **~6 ms, 6 kueri** — bilangan kueri tetap tanpa mengira saiz bank.
+Pertindihan antara dua percubaan: purata **16.6 / 100** soalan.
+
+Anggaran pertindihan mengikut saiz bank (`30²/A + 60²/bukanBI + 10²/BI`):
+
+| Jumlah bank | A | bukan-BI | BI | Pertindihan |
+|---|---|---|---|---|
+| 130 (seeder) | 40 | 75 | 15 | ~72 / 100 |
+| 300 | 90 | 175 | 35 | ~33 / 100 |
+| 500 | 150 | 290 | 60 | ~20 / 100 |
+| 800 | 240 | 460 | 100 | ~13 / 100 |
 
 ---
 
@@ -357,6 +371,60 @@ serta `#[Computed] questions()` (paginate 10, ditapis ikut section).
 
 Guna `auth()->user()?->isAdmin()`. Diuji dalam `RoleAccessTest`:
 `test_the_sidebar_shows_the_question_bank_only_to_admins` dan pasangannya untuk pelajar.
+
+---
+
+## ✅ FASA 8 — Import pukal JSON (SIAP)
+
+Dibina untuk menyokong rancangan menjana 300–500 soalan dengan AI.
+
+```
+app/Console/Commands/ImportQuestionsCommand.php   arahan soalan:import
+app/Services/QuestionImporter.php                 pengesahan + kegigihan
+app/Services/QuestionImportResult.php             kiraan, ralat, kesihatan bank
+database/data/contoh-import-soalan.json           templat + peraturan untuk AI
+tests/Feature/Admin/ImportSoalanTest.php          20 ujian
+```
+
+### Penggunaan
+```bash
+php artisan soalan:import fail.json --dry-run   # sahkan sahaja, tiada tulisan
+php artisan soalan:import fail.json             # import sebagai TIDAK AKTIF (lalai)
+php artisan soalan:import fail.json --aktif     # import terus aktif
+```
+
+### Format JSON
+Sama bentuk dengan `SoalanA::all()` / `SoalanB::all()` supaya konsisten:
+```json
+{
+  "section_a": [{ "text": "...", "options": [{ "text": "...", "score": 3 }] }],
+  "section_b": [{ "subject": "iq", "text": "...", "options": ["a","b","c","d"], "correct": 1 }]
+}
+```
+Kedua-dua kunci pilihan. Kunci bermula `_` diabaikan (templat guna ini untuk nota).
+
+### Keputusan reka bentuk
+| Perkara | Cara | Sebab |
+|---|---|---|
+| **Semua-atau-tiada** | Satu ralat → seluruh fail ditolak, sifar ditulis | Fail separa-import lebih susah difahami daripada yang ditolak; admin betulkan dan jalankan semula |
+| **Lalai TIDAK AKTIF** | `is_active = false` melainkan `--aktif` | Output AI perlu disemak manusia dahulu; `QuestionSelector` memang abaikan soalan tidak aktif |
+| **Pengesahan sama dengan UI** | Min/maks 4–6 pilihan, satu jawapan betul, sekurang-kurangnya satu skor > 0 | Kalau import boleh langkau invarian ini, bank rosak senyap sehingga hari peperiksaan |
+| **Dedup** | Ikut `question_text` — dalam fail dan terhadap DB | Jalankan semula fail yang sama tidak menggandakan |
+| **Laporan** | Jadual kesediaan bank + taburan subjek B | Membuat ketidakseimbangan subjek KELIHATAN tanpa mengubah semantik peperiksaan |
+
+### ⚠️ Konstant dipindahkan
+`MIN_OPTIONS` / `MAX_OPTIONS` **dipindah dari trait `ManagesQuestions` ke model `Question`**
+(`Question::MIN_OPTIONS`). Sebab: PHP tidak benarkan akses konstant melalui nama trait
+(`classConstant.onTrait`), dan had ini milik model domain, bukan concern UI.
+Semua rujukan (trait, dua Blade admin, pengimport) sudah dikemas kini.
+
+### Kuota subjek Bahagian B — SENGAJA TIDAK DIUBAH
+60 soalan bukan-BI masih ditarik **bercampur** daripada 4 subjek tanpa kuota per-subjek,
+seperti spesifikasi asal. Ini bermakna bank yang berat sebelah menghasilkan kertas yang
+berat sebelah. Ini keputusan **produk** (keadilan peperiksaan), bukan teknikal — jadi
+ia tidak diubah sendiri. Laporan `soalan:import` kini memaparkan taburan supaya admin
+nampak. Jika kuota per-subjek dikehendaki, ubah `QuestionSelector::select()` — tambah
+satu panggilan `pick()` bagi setiap subjek.
 
 ---
 

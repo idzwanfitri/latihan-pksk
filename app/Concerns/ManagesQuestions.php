@@ -25,10 +25,6 @@ trait ManagesQuestions
 {
     use WithPagination;
 
-    public const int MIN_OPTIONS = 4;
-
-    public const int MAX_OPTIONS = 6;
-
     public string $search = '';
 
     public ?int $editingId = null;
@@ -64,7 +60,7 @@ trait ManagesQuestions
         return [
             'questionText' => $this->questionTextRules(),
             'isActive' => ['boolean'],
-            'options' => ['required', 'array', 'min:'.self::MIN_OPTIONS, 'max:'.self::MAX_OPTIONS],
+            'options' => ['required', 'array', 'min:'.Question::MIN_OPTIONS, 'max:'.Question::MAX_OPTIONS],
             'options.*.option_text' => ['required', 'string', 'max:500'],
         ];
     }
@@ -86,8 +82,8 @@ trait ManagesQuestions
 
     public function addOption(): void
     {
-        if (count($this->options) >= self::MAX_OPTIONS) {
-            $this->addError('options', __('Maksimum :bil pilihan sahaja.', ['bil' => self::MAX_OPTIONS]));
+        if (count($this->options) >= Question::MAX_OPTIONS) {
+            $this->addError('options', __('Maksimum :bil pilihan sahaja.', ['bil' => Question::MAX_OPTIONS]));
 
             return;
         }
@@ -97,8 +93,8 @@ trait ManagesQuestions
 
     public function removeOption(int $index): void
     {
-        if (count($this->options) <= self::MIN_OPTIONS) {
-            $this->addError('options', __('Sekurang-kurangnya :bil pilihan diperlukan.', ['bil' => self::MIN_OPTIONS]));
+        if (count($this->options) <= Question::MIN_OPTIONS) {
+            $this->addError('options', __('Sekurang-kurangnya :bil pilihan diperlukan.', ['bil' => Question::MIN_OPTIONS]));
 
             return;
         }
@@ -147,7 +143,7 @@ trait ManagesQuestions
         $this->isActive = true;
         $this->options = [];
 
-        for ($i = 0; $i < self::MIN_OPTIONS; $i++) {
+        for ($i = 0; $i < Question::MIN_OPTIONS; $i++) {
             $this->options[] = $this->blankOption();
         }
 
